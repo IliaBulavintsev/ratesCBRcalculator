@@ -1,6 +1,12 @@
 package ru.sberbank.learning.rates.storage;
 
+import android.app.Application;
 import android.support.annotation.Nullable;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
 
 import ru.sberbank.learning.rates.networking.CurrenciesList;
 import ru.sberbank.learning.rates.networking.Currency;
@@ -11,7 +17,7 @@ import ru.sberbank.learning.rates.networking.Currency;
  *
  * @author Дмитрий Соколов <me@dimasokol.ru>
  */
-public final class CurrenciesStorage {
+public final class CurrenciesStorage extends Application{
 
     private CurrenciesList mLoadedList;
 
