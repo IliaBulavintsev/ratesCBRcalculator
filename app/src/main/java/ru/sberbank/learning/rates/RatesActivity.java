@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +33,8 @@ public class RatesActivity extends Activity {
     private LoadRates loadRates;
     private TextView stubTextView;
     private CurrenciesStorage currenciesStorage;
+    private TextView noData;
+    private Button refreshButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,8 @@ public class RatesActivity extends Activity {
 
         ratesListView = (ListView) findViewById(R.id.rates_list);
         stubTextView = (TextView) findViewById(R.id.text_stub);
+        noData = (TextView) findViewById(R.id.text_no_data);
+        refreshButton = (Button) findViewById(R.id.button_refresh);
 
         currenciesStorage = ((Storage)getApplication()).getStorage();
 
@@ -52,13 +57,40 @@ public class RatesActivity extends Activity {
             settingAdapter();
             setClickListener();
         }
+
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDownloadingFrame();
+                loadRates = new LoadRates();
+                loadRates.execute();
+            }
+        });
     }
 
     private void settingAdapter() {
-        stubTextView.setVisibility(View.GONE);
+        showResultFrame();
         ratesAdapter = new RatesAdapter(currenciesStorage.getLoadedList().getCurrencies());
         ratesListView.setAdapter(ratesAdapter);
 
+    }
+
+    private void showResultFrame(){
+        refreshButton.setVisibility(View.GONE);
+        noData.setVisibility(View.GONE);
+        stubTextView.setVisibility(View.GONE);
+    }
+
+    private void showErrorFrame(){
+        refreshButton.setVisibility(View.VISIBLE);
+        noData.setVisibility(View.VISIBLE);
+        stubTextView.setVisibility(View.GONE);
+    }
+
+    private void showDownloadingFrame(){
+        refreshButton.setVisibility(View.GONE);
+        noData.setVisibility(View.GONE);
+        stubTextView.setVisibility(View.VISIBLE);
     }
 
     private void setClickListener() {
@@ -134,9 +166,11 @@ public class RatesActivity extends Activity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            Log.e(TAG, "onPostExecute: "+code );
             if (code != 200){
-                Toast.makeText(RatesActivity.this, "Somthing gone wrong!",
+                Toast.makeText(RatesActivity.this, "Somthing gone wrong! \n code: " + code,
                         Toast.LENGTH_LONG).show();
+                showErrorFrame();
             } else {
                 currenciesStorage.setLoadedList(loadlist);
                 settingAdapter();
